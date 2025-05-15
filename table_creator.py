@@ -2,6 +2,8 @@
 Creates MySQL tables from Microsoft Access DB tables
 """
 
+import logging
+
 
 class TableCreator:
     """
@@ -10,6 +12,7 @@ class TableCreator:
     """
 
     def __init__(self, access_db_cursor, mysql_cursor, win32_db) -> None:
+        self.logger = logging.getLogger(__name__)
         self.access_db_cursor = access_db_cursor
         self.mysql_cursor = mysql_cursor
         self.win32_db = win32_db
@@ -29,6 +32,7 @@ class TableCreator:
         )
 
         self.mysql_cursor.execute(f"CREATE TABLE {table_name}({column_parameters})")
+        self.logger.info(f"Successfully created table {table_name}")
 
     def _get_primary_keys(self, table_name: str) -> list[str]:
         """Get primary keys associated with a table
