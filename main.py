@@ -1,4 +1,5 @@
 import argparse
+import logging
 import pathlib
 import sys
 
@@ -10,6 +11,12 @@ import db_config
 import table_creator
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        filename="app.log",
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+    )
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config-file", type=str)
     parser.add_argument("-a", "--access-db-file", type=str)
