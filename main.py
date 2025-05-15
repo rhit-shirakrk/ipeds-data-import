@@ -5,6 +5,7 @@ import sys
 import win32com.client
 
 import access_db
+import data_importer
 import db_config
 import table_creator
 
@@ -42,3 +43,6 @@ if __name__ == "__main__":
         tc.create_table(table_info.table_name)
 
     # populate MySQL tables with data
+    di = data_importer.DataImporter(mysql_conn)
+    for table_info in access_db_cursor.tables(tableType="TABLE"):
+        di.import_data(table_info.table_name)
