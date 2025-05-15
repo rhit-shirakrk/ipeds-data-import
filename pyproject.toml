@@ -8,6 +8,8 @@ version = "0.0.0"
 dependencies = [
     "SQLAlchemy",
     "pyodbc",
+    "pandas",
+    "pywin32",
 ]
 requires-python = "3.13"
 authors = [
