@@ -2,3 +2,4 @@ SQLAlchemy==2.0.40
 pyodbc==5.2.0
 pandas==2.2.3
 pywin32==310
+mysql-connector-python==9.3.0

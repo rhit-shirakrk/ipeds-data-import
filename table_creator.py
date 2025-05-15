@@ -11,10 +11,10 @@ class TableCreator:
     representation of that table in Python
     """
 
-    def __init__(self, access_db_cursor, mysql_cursor, win32_db) -> None:
+    def __init__(self, access_db_cursor, mysql_conn, win32_db) -> None:
         self.logger = logging.getLogger(__name__)
         self.access_db_cursor = access_db_cursor
-        self.mysql_cursor = mysql_cursor
+        self.mysql_conn = mysql_conn
         self.win32_db = win32_db
 
     def create_table(self, table_name: str) -> None:
@@ -30,9 +30,12 @@ class TableCreator:
         column_parameters.append(
             f"PRIMARY KEY ({', '.join(self._get_primary_keys(table_name))})"
         )
-
-        self.mysql_cursor.execute(f"CREATE TABLE {table_name}({column_parameters})")
-        self.logger.info(f"Successfully created table {table_name}")
+        
+        cursor = self.mysql_conn.cursor()
+        cursor.execute(f"CREATE TABLE {table_name}({', '.join(column_parameters)})")
+        cursor.close()
+        self.logger.info(f"Successfully created table {table_name}\n")
+        self.logger.info(f"Schematic:\nCREATE TABLE {table_name}({', '.join(column_parameters)})\n")
 
     def _get_primary_keys(self, table_name: str) -> list[str]:
         """Get primary keys associated with a table

@@ -30,26 +30,31 @@ if __name__ == "__main__":
         print("Path to Microsoft Access DB file required")
         sys.exit(1)
 
+    config_file_path = pathlib.Path(args.config_file)
+    access_db_file_path = pathlib.Path(args.access_db_file)
+
     # used for fetching primary keys in tables
     db_engine = win32com.client.Dispatch("DAO.DBEngine.120")
-    win32_db = db_engine.OpenDatabase(MDB)
+    win32_db = db_engine.OpenDatabase(access_db_file_path)
 
-    # used to connect to MySQL DB
-    mysql_conn = db_config.DBManager(args.config_file).get_db_connection()
-    mysql_cursor = mysql_conn.cursor()
+    # used to connect to MySQL DB\
+    mysql_manager = db_config.DBManager(config_file_path)
+    mysql_table_creation_conn = mysql_manager.get_table_creation_connection()
+    mysql_data_import_conn = mysql_manager.get_data_import_connection()
 
     # used for general-purpose tasks in Microsoft Access DB
-    access_db_conn = access_db.AccessDBConnManager(
-        pathlib.Path(args.access_db_file)
-    ).get_connection()
+    access_db_conn = access_db.AccessDBConnManager(access_db_file_path).get_connection()
     access_db_cursor = access_db_conn.cursor()
 
     # create MySQL tables
-    tc = table_creator.TableCreator(access_db_cursor, mysql_cursor, win32_db)
+    tc = table_creator.TableCreator(access_db_cursor, mysql_table_creation_conn, win32_db)
     for table_info in access_db_cursor.tables(tableType="TABLE"):
         tc.create_table(table_info.table_name)
 
     # populate MySQL tables with data
-    di = data_importer.DataImporter(mysql_conn)
+    di = data_importer.DataImporter(access_db_conn, mysql_data_import_conn)
     for table_info in access_db_cursor.tables(tableType="TABLE"):
         di.import_data(table_info.table_name)
+
+    access_db_cursor.close()
+    mysql_data_import_conn.dispatch()
