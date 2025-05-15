@@ -31,10 +31,7 @@ instead have the user supply a URL that links to the [IPEDS data](https://nces.e
 due to client concerns that the website may be taken down in the near future, I
 felt it made more sense to have the file on hand.
 
-I also made a [data archive](https://github.com/rhit-shirakrk/ipeds-data-archive) of all publicly-available IPEDS files, so
-if one wanted to run this pipeline on all of the files, it would require
-relatively small changes. However, because the Gender Fair 2024-2025 team only
-chose to analyze data from one year, I felt this was a simpler implementation.
+To run the script, call `python -c WINDOWS_PATH_TO_CREDS_FILE -a WINDOWS_PATH_TO_ACCESS_DB_FILE`
 
 ## Credentials File Format
 
@@ -45,5 +42,12 @@ password = "PASSWORD_HERE"
 hostname = "HOSTNAME_HERE"
 port = "PORT_HERE"
 database = "DATABASE_NAME_HERE"
-table_name = "TABLE_NAME"
+table_name = "TABLE_NAME_HERE"
 ```
+
+# Expandability
+
+I also made a [data archive](https://github.com/rhit-shirakrk/ipeds-data-archive) of all publicly-available IPEDS files, so
+if one wanted to run this pipeline on all of the files, it would require
+relatively small changes. However, because the Gender Fair 2024-2025 team only
+chose to analyze data from one year, I felt this was a simpler implementation.
