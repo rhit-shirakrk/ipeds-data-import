@@ -1,10 +1,13 @@
 """
 Open/close database connections
 """
+
 import configparser
 import os
 import pathlib
+
 import sqlalchemy
+
 
 class DBManager:
     """Load a database config file to upload data to a database
@@ -25,9 +28,15 @@ class DBManager:
         config = configparser.ConfigParser()
         config.read(db_config_ini_file)
         self.user = config.get(DBManager.CONFIG_SECTION, DBManager.USER_CONFIG_KEY)
-        self.hostname = config.get(DBManager.CONFIG_SECTION, DBManager.HOSTNAME_CONFIG_KEY)
-        self.password = config.get(DBManager.CONFIG_SECTION, DBManager.PASSWORD_CONFIG_KEY)
-        self.database = config.get(DBManager.CONFIG_SECTION, DBManager.DATABASE_CONFIG_KEY)
+        self.hostname = config.get(
+            DBManager.CONFIG_SECTION, DBManager.HOSTNAME_CONFIG_KEY
+        )
+        self.password = config.get(
+            DBManager.CONFIG_SECTION, DBManager.PASSWORD_CONFIG_KEY
+        )
+        self.database = config.get(
+            DBManager.CONFIG_SECTION, DBManager.DATABASE_CONFIG_KEY
+        )
         self.port = config.get(DBManager.CONFIG_SECTION, DBManager.PORT_CONFIG_KEY)
 
     def _validate_config_file(self, db_config_ini_file: pathlib.Path) -> None:
