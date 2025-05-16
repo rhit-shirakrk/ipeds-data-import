@@ -12,7 +12,7 @@ dependencies = [
     "pywin32",
     "mysql-connector-python",
 ]
-requires-python = "3.13"
+requires-python = ">=3.10"
 authors = [
    {name = "Ryan Shiraki", email = "shirakrk@rose-hulman.edu"}
 ]

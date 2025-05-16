@@ -55,7 +55,6 @@ class DBManager:
         _, file_extension = os.path.splitext(db_config_ini_file)
         if file_extension != DBManager.CONFIG_FILE_EXTENSION:
             raise ValueError(f"{db_config_ini_file} does not lead to an ini file")
-        
 
     def get_data_import_connection(self) -> sqlalchemy.Engine:
         """Creates connection to database meant for importing data
@@ -66,11 +65,19 @@ class DBManager:
         return sqlalchemy.create_engine(
             f"mysql+mysqlconnector://{self.user}:{self.password}@{self.hostname}:{self.port}/{self.database}"
         )
-    
-    def get_table_creation_connection(self) -> mysql.PooledMySQLConnection | mysql.MySQLConnectionAbstract:
+
+    def get_table_creation_connection(
+        self,
+    ) -> mysql.PooledMySQLConnection | mysql.MySQLConnectionAbstract:
         """Creates connection to database meant for creating tables
 
         :return: Connection to database
         :rtype: mysql.PooledMySQLConnection | mysql.MySQLConnectionAbstract
         """
-        return mysql.connector.connect(user=self.user, password=self.password, database=self.database, host=self.hostname, port=self.port)
+        return mysql.connector.connect(
+            user=self.user,
+            password=self.password,
+            database=self.database,
+            host=self.hostname,
+            port=self.port,
+        )

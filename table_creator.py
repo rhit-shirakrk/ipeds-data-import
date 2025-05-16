@@ -3,12 +3,15 @@ Creates MySQL tables from Microsoft Access DB tables
 """
 
 import logging
-import pyodbc
 import typing
+
+import pyodbc
+
 
 class TableCreator:
     """Get table schematics from a Microsoft Access DB file, then create a
-    representation of that table in Python
+    representation of that table in Python. If the table has no primary key,
+    the described fallback primary key and data type will be used.
 
     :param access_db_cursor: Access point into the Microsoft Access DB file
     :type access_db_cursor: pyodbc.Cursor
@@ -17,7 +20,7 @@ class TableCreator:
     """
 
     FALLBACK_PRIMARY_KEY_NAME = "fallback_rowid"
-    FALLBACK_PRIMARY_KEY_DATATYPE = "INTEGER"
+    FALLBACK_PRIMARY_KEY_DATATYPE = "UNSIGNED BIGINT"
     ESCAPE_IDENTIFIER = "`"
     VARIABLE_SIZE_DATATYPES = set(["VARCHAR", "DECIMAL"])
 
@@ -36,19 +39,21 @@ class TableCreator:
         """
         missing_primary_keys = False
         primary_keys = self._get_primary_keys(table_name)
-        fallback_primary_key_name = self._wrap_in_escape_identifier(TableCreator.FALLBACK_PRIMARY_KEY_NAME)
+        fallback_primary_key_name = self._wrap_in_escape_identifier(
+            TableCreator.FALLBACK_PRIMARY_KEY_NAME
+        )
         if not primary_keys:
             missing_primary_keys = True
             primary_keys = [fallback_primary_key_name]
-            
+
         column_parameters = self._get_column_parameters(table_name)
 
         # add auto-incrementing id if there's no primary key
         if missing_primary_keys:
-            column_parameters.append(f"{fallback_primary_key_name} {TableCreator.FALLBACK_PRIMARY_KEY_DATATYPE} AUTO_INCREMENT")
-        column_parameters.append(
-            f"PRIMARY KEY ({', '.join(primary_keys)})"
-        )
+            column_parameters.append(
+                f"{fallback_primary_key_name} {TableCreator.FALLBACK_PRIMARY_KEY_DATATYPE} AUTO_INCREMENT"
+            )
+        column_parameters.append(f"PRIMARY KEY ({', '.join(primary_keys)})")
         column_parameters = ", ".join(column_parameters)
         self.logger.info(f"Genearted query for creating {table_name}")
         return f"DROP TABLE IF EXISTS {table_name};\nCREATE TABLE {table_name}({column_parameters});"
@@ -64,8 +69,10 @@ class TableCreator:
         tbd = self.win32_db.TableDefs(table_name)
         for i in tbd.Indexes:
             if i.Primary:
-                return [f"{self._wrap_in_escape_identifier(fld.Name)}" for fld in i.Fields]
-            
+                return [
+                    f"{self._wrap_in_escape_identifier(fld.Name)}" for fld in i.Fields
+                ]
+
     def _get_column_parameters(self, table_name: str) -> list[str]:
         """Generate all column parameters associated with a table
 
@@ -78,11 +85,13 @@ class TableCreator:
         for row in self.access_db_cursor.columns(table=table_name):
             column_parameter = f"{self._wrap_in_escape_identifier(row.column_name)} {self._convert_to_mysql_datatype(row.type_name)}"
             if row.type_name in TableCreator.VARIABLE_SIZE_DATATYPES:
-                column_parameter = self._update_variable_size_column_parameter(column_parameter, row, table_name)
+                column_parameter = self._update_variable_size_column_parameter(
+                    column_parameter, row, table_name
+                )
             column_parameters.append(column_parameter)
 
         return column_parameters
-    
+
     def _convert_to_mysql_datatype(self, column_type: str) -> str:
         """Convert a potentially-invalid column type to one used in MySQL
 
@@ -96,8 +105,10 @@ class TableCreator:
                 return "LONGTEXT"
             case _:
                 return column_type
-            
-    def _update_variable_size_column_parameter(self, column_parameter: str, row: typing.Any, table_name: str) -> str:
+
+    def _update_variable_size_column_parameter(
+        self, column_parameter: str, row: typing.Any, table_name: str
+    ) -> str:
         """Update a column data type that accepts size parameters
 
         :param column_parameter: The current, incomplete column parameter. Variable
@@ -113,15 +124,21 @@ class TableCreator:
         match row.type_name:
             case "VARCHAR":
                 updated_with_size = f"{column_parameter}({row.column_size})"
-                self.logger.info(f"{table_name}: updated {column_parameter} to {updated_with_size}")
+                self.logger.info(
+                    f"{table_name}: updated {column_parameter} to {updated_with_size}"
+                )
                 return updated_with_size
             case "DECIMAL":
-                updated_with_size = f"{column_parameter}({row.column_size},{row.decimal_digits})"
-                self.logger.info(f"{table_name}: updated {column_parameter} to {updated_with_size}")
+                updated_with_size = (
+                    f"{column_parameter}({row.column_size},{row.decimal_digits})"
+                )
+                self.logger.info(
+                    f"{table_name}: updated {column_parameter} to {updated_with_size}"
+                )
                 return updated_with_size
             case _:
                 raise ValueError("Unrecognized variable-length data type")
-            
+
     def _wrap_in_escape_identifier(self, column_name: str) -> str:
         """Wrap column name in MySQL escape identifier to avoid conflicts with MySQL keywords
 
@@ -131,3 +148,4 @@ class TableCreator:
         :rtype: str
         """
         return f"{TableCreator.ESCAPE_IDENTIFIER}{column_name}{TableCreator.ESCAPE_IDENTIFIER}"
+
