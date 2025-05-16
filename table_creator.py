@@ -3,12 +3,17 @@ Creates MySQL tables from Microsoft Access DB tables
 """
 
 import logging
-
+import pyodbc
+import typing
 
 class TableCreator:
-    """
-    Get table schematics from a Microsoft Access DB file, then create a
+    """Get table schematics from a Microsoft Access DB file, then create a
     representation of that table in Python
+
+    :param access_db_cursor: Access point into the Microsoft Access DB file
+    :type access_db_cursor: pyodbc.Cursor
+    :param win32_db: Access point (with Windows API) into the Microsoft Access DB file
+    :type win32_db: typing.Any
     """
 
     FALLBACK_PRIMARY_KEY_NAME = "fallback_rowid"
@@ -16,7 +21,7 @@ class TableCreator:
     ESCAPE_IDENTIFIER = "`"
     VARIABLE_SIZE_DATATYPES = set(["VARCHAR", "DECIMAL"])
 
-    def __init__(self, access_db_cursor, win32_db) -> None:
+    def __init__(self, access_db_cursor: pyodbc.Cursor, win32_db: typing.Any) -> None:
         self.logger = logging.getLogger(__name__)
         self.access_db_cursor = access_db_cursor
         self.win32_db = win32_db
@@ -26,7 +31,7 @@ class TableCreator:
 
         :param table_name: The name of the table to create in Python
         :type table_name: str
-        :return: MySQL query to create the table
+        :return: A MySQL query to create the table
         :rtype: str
         """
         missing_primary_keys = False
@@ -92,14 +97,14 @@ class TableCreator:
             case _:
                 return column_type
             
-    def _update_variable_size_column_parameter(self, column_parameter: str, row, table_name: str) -> str:
+    def _update_variable_size_column_parameter(self, column_parameter: str, row: typing.Any, table_name: str) -> str:
         """Update a column data type that accepts size parameters
 
         :param column_parameter: The current, incomplete column parameter. Variable
         parameters, such as size in VARCHAR, must be added
         :type column_parameter: str
         :param row: The current row in the Microsoft Access DB file
-        :type row: Any
+        :type row: typing.Any
         :param table_name: The name of the table to create in Python
         :type table_name: str
         :return: The completed column parameter

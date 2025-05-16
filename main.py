@@ -49,25 +49,25 @@ if __name__ == "__main__":
     # create MySQL tables
     tc = table_creator.TableCreator(access_db_cursor, win32_db)
 
-    table_queries = []
-    table_queries.append(f"USE {mysql_manager.database};")
+    # generate a CREATE TABLE query for each table in the Microsoft Access DB file
+    create_table_queries = []
+    create_table_queries.append(f"USE {mysql_manager.database};")
+
     table_names = [table_info.table_name for table_info in access_db_cursor.tables(tableType="TABLE")]
-    table_name_to_primary_keys = {}
     for table_name in table_names:
-        table_query = tc.generate_create_table_query(table_name)
-        table_queries.append(table_query)
+        create_table_queries.append(tc.generate_create_table_query(table_name))
     access_db_cursor.close()
     access_db_conn.close()
 
-    # store table generation query in file in case users need it later
-    combined_table_query = "\n\n".join(table_queries) # added double newline for readability
+    # combine all CREATE TABLE queries into one query and store it in a file in case users need it later
+    combined_create_table_query = "\n\n".join(create_table_queries) # added double newline for readability
     with open("ipeds_table_creation.sql", "w") as file:
-        file.write(combined_table_query)
+        file.write(combined_create_table_query)
 
-    # # run query to create tables
+    # run query to create tables
     mysql_table_creation_conn = mysql_manager.get_table_creation_connection()
     mysql_table_creation_conn_cursor = mysql_table_creation_conn.cursor()
-    mysql_table_creation_conn_cursor.execute(combined_table_query)
+    mysql_table_creation_conn_cursor.execute(combined_create_table_query) # faster to run one large query than many small queries (N + 1)
     mysql_table_creation_conn_cursor.close()
     mysql_table_creation_conn.close()
     print(f"All tables created")

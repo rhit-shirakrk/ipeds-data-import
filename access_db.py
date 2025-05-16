@@ -10,6 +10,11 @@ import pyodbc
 
 
 class AccessDBConnManager:
+    """Create a connection to the Microsoft Access DB file
+
+    :param access_db_file_path: The path to the Microsoft Access DB file
+    :type access_db_file_path: pathlib.Path
+    """
     DRIVER = "{Microsoft Access Driver (*.mdb, *.accdb)}"
     FILE_EXTENSION  = ".accdb"
 
@@ -32,9 +37,11 @@ class AccessDBConnManager:
         if file_extension != AccessDBConnManager.FILE_EXTENSION:
             raise ValueError(f"{access_db_file_path} does not lead to an {AccessDBConnManager.FILE_EXTENSION} file")
 
-    def get_connection(self):
-        """
-        Return connection to Microsoft Access DB file
+    def get_connection(self) -> pyodbc.Connection:
+        """Create connection to the Microsoft Access DB file
+
+        :return: Connectio to the Microsoft Access DB file
+        :rtype: pyodbc.Connection
         """
         return pyodbc.connect(
             f"DRIVER={AccessDBConnManager.DRIVER};DBQ={self.access_db_file_path}"
