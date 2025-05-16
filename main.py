@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
     # store table generation query in file in case users need it later
     combined_table_query = "\n\n".join(table_queries) # added double newline for readability
-    with open("ipeds_table_creation.sql", "x") as file:
+    with open("ipeds_table_creation.sql", "w") as file:
         file.write(combined_table_query)
 
     # populate MySQL tables with data

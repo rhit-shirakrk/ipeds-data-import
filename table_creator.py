@@ -32,15 +32,16 @@ class TableCreator:
         print(f"Creating table {table_name}")
         missing_primary_keys = False
         primary_keys = self._get_primary_keys(table_name)
+        fallback_primary_key_name = self._wrap_in_escape_identifier(TableCreator.FALLBACK_PRIMARY_KEY_NAME)
         if not primary_keys:
             missing_primary_keys = True
-            primary_keys = [f"{TableCreator.ESCAPE_IDENTIFIER}{TableCreator.FALLBACK_PRIMARY_KEY_NAME}{TableCreator.ESCAPE_IDENTIFIER}"]
+            primary_keys = [fallback_primary_key_name]
             
         column_parameters = self._get_column_parameters(table_name)
 
         # add auto-incrementing id if there's no primary key
         if missing_primary_keys:
-            column_parameters.append(f"{TableCreator.ESCAPE_IDENTIFIER}{TableCreator.FALLBACK_PRIMARY_KEY_NAME}{TableCreator.ESCAPE_IDENTIFIER} {TableCreator.FALLBACK_PRIMARY_KEY_DATATYPE} AUTO_INCREMENT")
+            column_parameters.append(f"{fallback_primary_key_name} {TableCreator.FALLBACK_PRIMARY_KEY_DATATYPE} AUTO_INCREMENT")
         column_parameters.append(
             f"PRIMARY KEY ({', '.join(primary_keys)})"
         )
@@ -58,7 +59,7 @@ class TableCreator:
         tbd = self.win32_db.TableDefs(table_name)
         for i in tbd.Indexes:
             if i.Primary:
-                return [f"{TableCreator.ESCAPE_IDENTIFIER}{fld.Name}{TableCreator.ESCAPE_IDENTIFIER}" for fld in i.Fields]
+                return [f"{self._wrap_in_escape_identifier(fld.Name)}" for fld in i.Fields]
             
     def _get_column_parameters(self, table_name: str) -> list[str]:
         """Generate all column parameters associated with a table
@@ -70,10 +71,9 @@ class TableCreator:
         """
         column_parameters = []
         for row in self.access_db_cursor.columns(table=table_name):
-            column_parameter = f"{TableCreator.ESCAPE_IDENTIFIER}{row.column_name}{TableCreator.ESCAPE_IDENTIFIER} {self._convert_to_mysql_datatype(row.type_name)}"
+            column_parameter = f"{self._wrap_in_escape_identifier(row.column_name)} {self._convert_to_mysql_datatype(row.type_name)}"
             if row.type_name == "VARCHAR":
                 column_parameter += f"({row.column_size})"
-
             column_parameters.append(column_parameter)
 
         return column_parameters
@@ -91,3 +91,13 @@ class TableCreator:
                 return "LONGTEXT"
             case _:
                 return column_type
+            
+    def _wrap_in_escape_identifier(self, column_name: str) -> str:
+        """Wrap column name in MySQL escape identifier to avoid conflicts with MySQL keywords
+
+        :param column_name: The column name
+        :type column_name: str
+        :return: The column name wrapped in escape identifiers
+        :rtype: str
+        """
+        return f"{TableCreator.ESCAPE_IDENTIFIER}{column_name}{TableCreator.ESCAPE_IDENTIFIER}"
