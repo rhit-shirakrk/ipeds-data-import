@@ -6,11 +6,13 @@ import configparser
 import os
 import pathlib
 
+import mysql.connector
 import sqlalchemy
 
 
 class DBManager:
     """Load a database config file to upload data to a database
+
     :param db_config_ini_file: The path to the ini config file
     :type db_config_ini_file: pathlib.Path
     """
@@ -46,7 +48,6 @@ class DBManager:
         :type db_config_ini_file: pathlib.Path
         :raises FileNotFoundError: The path does not lead to an existing file
         :raises ValueError: The path does not lead to an ini file
-        :raises ValueError: The file is missing the specified config section
         """
         if not os.path.exists(db_config_ini_file):
             raise FileNotFoundError(f"{db_config_ini_file} does not lead to a file")
@@ -54,9 +55,10 @@ class DBManager:
         _, file_extension = os.path.splitext(db_config_ini_file)
         if file_extension != DBManager.CONFIG_FILE_EXTENSION:
             raise ValueError(f"{db_config_ini_file} does not lead to an ini file")
+        
 
-    def get_db_connection(self) -> sqlalchemy.Engine:
-        """Creates connection to database
+    def get_data_import_connection(self) -> sqlalchemy.Engine:
+        """Creates connection to database meant for importing data
 
         :return: Connection to database
         :rtype: sqlalchemy.Engine
@@ -64,3 +66,11 @@ class DBManager:
         return sqlalchemy.create_engine(
             f"mysql+mysqlconnector://{self.user}:{self.password}@{self.hostname}:{self.port}/{self.database}"
         )
+    
+    def get_table_creation_connection(self) -> mysql.PooledMySQLConnection | mysql.MySQLConnectionAbstract:
+        """Creates connection to database meant for creating tables
+
+        :return: Connection to database
+        :rtype: mysql.PooledMySQLConnection | mysql.MySQLConnectionAbstract
+        """
+        return mysql.connector.connect(user=self.user, password=self.password, database=self.database, host=self.hostname, port=self.port)

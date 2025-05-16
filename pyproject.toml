@@ -10,6 +10,7 @@ dependencies = [
     "pyodbc",
     "pandas",
     "pywin32",
+    "mysql-connector-python",
 ]
 requires-python = "3.13"
 authors = [
