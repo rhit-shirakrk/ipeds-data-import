@@ -15,10 +15,9 @@ class TableCreator:
     FALLBACK_PRIMARY_KEY_DATATYPE = "INTEGER"
     ESCAPE_IDENTIFIER = "`"
 
-    def __init__(self, access_db_cursor, mysql_cursor, win32_db) -> None:
+    def __init__(self, access_db_cursor, win32_db) -> None:
         self.logger = logging.getLogger(__name__)
         self.access_db_cursor = access_db_cursor
-        self.mysql_cursor = mysql_cursor
         self.win32_db = win32_db
 
     def generate_create_table_query(self, table_name: str) -> str:
@@ -29,7 +28,6 @@ class TableCreator:
         :return: MySQL query to create the table
         :rtype: str
         """
-        print(f"Creating table {table_name}")
         missing_primary_keys = False
         primary_keys = self._get_primary_keys(table_name)
         fallback_primary_key_name = self._wrap_in_escape_identifier(TableCreator.FALLBACK_PRIMARY_KEY_NAME)
@@ -46,6 +44,7 @@ class TableCreator:
             f"PRIMARY KEY ({', '.join(primary_keys)})"
         )
         column_parameters = ", ".join(column_parameters)
+        self.logger.info(f"Genearted query for creating {table_name}")
         return f"DROP TABLE IF EXISTS {table_name};\nCREATE TABLE {table_name}({column_parameters});"
 
     def _get_primary_keys(self, table_name: str) -> list[str]:
