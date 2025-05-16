@@ -102,7 +102,11 @@ class TableCreator:
         """
         match column_type:
             case "LONGCHAR":
-                return "LONGTEXT"
+                conversion = "LONGTEXT"
+                self.logger.info(
+                    f"{table_name}: converted non-compatible MySQL data type {column_type} to {conversion}"
+                )
+                return conversion
             case _:
                 return column_type
 
@@ -148,4 +152,3 @@ class TableCreator:
         :rtype: str
         """
         return f"{TableCreator.ESCAPE_IDENTIFIER}{column_name}{TableCreator.ESCAPE_IDENTIFIER}"
-
