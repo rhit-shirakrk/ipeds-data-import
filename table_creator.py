@@ -14,6 +14,7 @@ class TableCreator:
     FALLBACK_PRIMARY_KEY_NAME = "fallback_rowid"
     FALLBACK_PRIMARY_KEY_DATATYPE = "INTEGER"
     ESCAPE_IDENTIFIER = "`"
+    VARIABLE_SIZE_DATATYPES = set(["VARCHAR", "DECIMAL"])
 
     def __init__(self, access_db_cursor, win32_db) -> None:
         self.logger = logging.getLogger(__name__)
@@ -71,8 +72,8 @@ class TableCreator:
         column_parameters = []
         for row in self.access_db_cursor.columns(table=table_name):
             column_parameter = f"{self._wrap_in_escape_identifier(row.column_name)} {self._convert_to_mysql_datatype(row.type_name)}"
-            if row.type_name == "VARCHAR":
-                column_parameter += f"({row.column_size})"
+            if row.type_name in TableCreator.VARIABLE_SIZE_DATATYPES:
+                column_parameter = self._update_variable_size_column_parameter(column_parameter, row, table_name)
             column_parameters.append(column_parameter)
 
         return column_parameters
@@ -90,6 +91,31 @@ class TableCreator:
                 return "LONGTEXT"
             case _:
                 return column_type
+            
+    def _update_variable_size_column_parameter(self, column_parameter: str, row, table_name: str) -> str:
+        """Update a column data type that accepts size parameters
+
+        :param column_parameter: The current, incomplete column parameter. Variable
+        parameters, such as size in VARCHAR, must be added
+        :type column_parameter: str
+        :param row: The current row in the Microsoft Access DB file
+        :type row: Any
+        :param table_name: The name of the table to create in Python
+        :type table_name: str
+        :return: The completed column parameter
+        :rtype: str column_parameter += f"({row.column_size})"
+        """
+        match row.type_name:
+            case "VARCHAR":
+                updated_with_size = f"{column_parameter}({row.column_size})"
+                self.logger.info(f"{table_name}: updated {column_parameter} to {updated_with_size}")
+                return updated_with_size
+            case "DECIMAL":
+                updated_with_size = f"{column_parameter}({row.column_size},{row.decimal_digits})"
+                self.logger.info(f"{table_name}: updated {column_parameter} to {updated_with_size}")
+                return updated_with_size
+            case _:
+                raise ValueError("Unrecognized variable-length data type")
             
     def _wrap_in_escape_identifier(self, column_name: str) -> str:
         """Wrap column name in MySQL escape identifier to avoid conflicts with MySQL keywords
