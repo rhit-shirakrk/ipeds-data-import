@@ -12,6 +12,7 @@ class DataImporter:
     """
     Import data from specified Microsoft Access DB table
     """
+    ROWS_PER_CHUNK = 200000
 
     def __init__(self, access_db_manager, mysql_manager) -> None:
         self.logger = logging.getLogger(__name__)
@@ -28,14 +29,15 @@ class DataImporter:
 
         try:
             access_db_conn = self.access_db_manager.get_connection()
-            df = pd.read_sql(query, access_db_conn)
+            for chunk in pd.read_sql(query, access_db_conn, chunksize=DataImporter.ROWS_PER_CHUNK):
+                mysql_conn = self.mysql_manager.get_data_import_connection()
+                chunk.to_sql(table_name, mysql_conn, if_exists="append", index=False)
+                mysql_conn.dispose()
+                self.logger.info(f"Imported {len(chunk.index)} rows from {table_name}")
             access_db_conn.close()
 
-            mysql_conn = self.mysql_manager.get_data_import_connection()
-            df.to_sql(table_name, mysql_conn, if_exists="append", index=False)
-            mysql_conn.dispose()
-
-            print(f"Successfully imported data to {table_name}")
-            self.logger.info(f"Successfully imported data to {table_name}")
+            print(f"Successfully imported data from {table_name}")
+            self.logger.info(f"Successfully imported data from {table_name}")
         except Exception as e:
+            print(f"Failed to import data from {table_name}")
             self.logger.error(traceback.format_exc())
