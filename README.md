@@ -37,6 +37,17 @@ on certain fields found in the Microsoft Access DB table schemas.
 
 To run the script, call `python -c WINDOWS_PATH_TO_CREDS_FILE -a WINDOWS_PATH_TO_ACCESS_DB_FILE`
 
+This pipeline will (at a high-level) do the following:
+
+1. Create empty, MySQL tables of each table in the provided Microsoft Access DB
+file
+2. Import all data from each table in Microsoft Access DB to the corresponding
+MySQL table
+
+Because this pipeline is intended to be ran before anything on the database is
+initialized, it will drop any tables with the same name in the user-provided
+database.
+
 ## Credentials File Format
 
 ```python
@@ -46,7 +57,6 @@ password = "PASSWORD_HERE"
 hostname = "HOSTNAME_HERE"
 port = "PORT_HERE"
 database = "DATABASE_NAME_HERE"
-table_name = "TABLE_NAME_HERE"
 ```
 
 # Expandability

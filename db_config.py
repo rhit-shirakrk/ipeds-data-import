@@ -84,4 +84,3 @@ class DBManager:
             host=self.hostname,
             port=self.port,
         )
-
