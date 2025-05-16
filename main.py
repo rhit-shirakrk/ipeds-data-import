@@ -40,6 +40,7 @@ if __name__ == "__main__":
     # used to connect to MySQL DB\
     mysql_manager = db_config.DBManager(config_file_path)
     mysql_table_creation_conn = mysql_manager.get_table_creation_connection()
+    mysql_table_creation_conn_cursor = mysql_table_creation_conn.cursor()
     mysql_data_import_conn = mysql_manager.get_data_import_connection()
 
     # used for general-purpose tasks in Microsoft Access DB
@@ -47,14 +48,21 @@ if __name__ == "__main__":
     access_db_cursor = access_db_conn.cursor()
 
     # create MySQL tables
-    tc = table_creator.TableCreator(access_db_cursor, mysql_table_creation_conn, win32_db)
-    for table_info in access_db_cursor.tables(tableType="TABLE"):
-        tc.create_table(table_info.table_name)
+    tc = table_creator.TableCreator(access_db_cursor, mysql_table_creation_conn_cursor, win32_db)
+
+    table_queries = []
+    table_queries.append(f"USE {mysql_manager.database};")
+    table_names = [table_info.table_name for table_info in access_db_cursor.tables(tableType="TABLE")]
+    for table_name in table_names:
+        table_query = tc.generate_create_table_query(table_name)
+        table_queries.append(table_query)
+
+    # store table generation query in file in case users need it later
+    combined_table_query = "\n\n".join(table_queries) # added double newline for readability
+    with open("ipeds_table_creation.sql", "x") as file:
+        file.write(combined_table_query)
 
     # populate MySQL tables with data
-    di = data_importer.DataImporter(access_db_conn, mysql_data_import_conn)
-    for table_info in access_db_cursor.tables(tableType="TABLE"):
-        di.import_data(table_info.table_name)
-
-    access_db_cursor.close()
-    mysql_data_import_conn.dispatch()
+    # di = data_importer.DataImporter(access_db_conn, mysql_data_import_conn)
+    # for table_name in table_names:
+    #     di.import_data(table_name)

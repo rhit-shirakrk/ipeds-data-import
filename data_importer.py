@@ -25,5 +25,5 @@ class DataImporter:
         """
         query = f"SELECT * FROM {table_name}"
         df = pd.read_sql(query, self.access_db_conn)
-        df.to_sql(table_name, self.mysql_conn, index=False)
+        df.to_sql(table_name, self.mysql_conn, if_exists="append", index=False)
         self.logger.info(f"Successfully imported data to {table_name}")
