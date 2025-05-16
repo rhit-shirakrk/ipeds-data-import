@@ -80,7 +80,6 @@ if __name__ == "__main__":
     print(f"All tables created")
 
     # populate MySQL tables with data
+    di = data_importer.DataImporter(access_db_manager, mysql_manager)
     for table_name in table_names:
-        di = data_importer.DataImporter(access_db_manager, mysql_manager)
         di.import_data(table_name)
-
