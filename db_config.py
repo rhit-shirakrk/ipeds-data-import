@@ -68,7 +68,7 @@ class DBManager:
 
     def get_table_creation_connection(
         self,
-    ) -> mysql.PooledMySQLConnection | mysql.MySQLConnectionAbstract:
+    ) -> mysql.connector.pooling.PooledMySQLConnection | mysql.connector.abstracts.MySQLConnectionAbstract:
         """Creates connection to database meant for creating tables
 
         :return: Connection to database
