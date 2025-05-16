@@ -20,7 +20,7 @@ class TableCreator:
     """
 
     FALLBACK_PRIMARY_KEY_NAME = "fallback_rowid"
-    FALLBACK_PRIMARY_KEY_DATATYPE = "UNSIGNED BIGINT"
+    FALLBACK_PRIMARY_KEY_DATATYPE = "BIGINT"
     ESCAPE_IDENTIFIER = "`"
     VARIABLE_SIZE_DATATYPES = set(["VARCHAR", "DECIMAL"])
 
@@ -83,7 +83,7 @@ class TableCreator:
         """
         column_parameters = []
         for row in self.access_db_cursor.columns(table=table_name):
-            column_parameter = f"{self._wrap_in_escape_identifier(row.column_name)} {self._convert_to_mysql_datatype(row.type_name)}"
+            column_parameter = f"{self._wrap_in_escape_identifier(row.column_name)} {self._convert_to_mysql_datatype(row.type_name, table_name)}"
             if row.type_name in TableCreator.VARIABLE_SIZE_DATATYPES:
                 column_parameter = self._update_variable_size_column_parameter(
                     column_parameter, row, table_name
@@ -92,11 +92,13 @@ class TableCreator:
 
         return column_parameters
 
-    def _convert_to_mysql_datatype(self, column_type: str) -> str:
+    def _convert_to_mysql_datatype(self, column_type: str, table_name: str) -> str:
         """Convert a potentially-invalid column type to one used in MySQL
 
         :param column_type: The column type
         :type column_type: str
+        :param table_name: The name of the table to create in Python
+        :type table_name: str
         :return: An equivalent, MySQL-compliant column type
         :rtype: str
         """
