@@ -55,3 +55,15 @@ I also made a [data archive](https://github.com/rhit-shirakrk/ipeds-data-archive
 if one wanted to run this pipeline on all of the files, it would require
 relatively small changes. However, because the Gender Fair 2024-2025 team only
 chose to analyze data from one year, I felt this was a simpler implementation.
+
+# Other
+
+Python may give a warning similar to something below:
+
+`UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.`
+
+However, as of now, this is not a concern as other DBAPI connections do work.
+There are existing solutions to this problem, but I chose to use pyodbc for it's
+convenient API.
+
+- <https://stackoverflow.com/a/71083448>
