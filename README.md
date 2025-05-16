@@ -1,7 +1,7 @@
 
 # Installation/Dependencies
 
-Ensure you are on Python 3.13.
+Ensure you are on Python 3.10.
 
 Run `pip install -r requirements.txt` to install all dependencies. Ensure you are
 using a virtual environment such as `venv`
@@ -30,6 +30,12 @@ format
 instead have the user supply a URL that links to the [IPEDS data](https://nces.ed.gov/ipeds/use-the-data/download-access-database),
 due to client concerns that the website may be taken down in the near future, I
 felt it made more sense to have the file on hand.
+
+Logs are written to a file named `app.log`, which documents all successful table
+creation/data imports. Adjustments to variable-size data types are also documented.
+For example, when a column is identified as `VARCHAR`, the logs will explicitly
+indicate what size it was set to (ex. `VARCHAR(255)`). This also applies to
+`DECIMAL` (ex. `DECIMAL(20, 2)`, `DECIMAL(10, 0)`, etc.)
 
 To run the script, call `python -c WINDOWS_PATH_TO_CREDS_FILE -a WINDOWS_PATH_TO_ACCESS_DB_FILE`
 
