@@ -1,7 +1,7 @@
 
 # Installation/Dependencies
 
-Ensure you are on Python 3.10.
+Ensure you are on Windows and using Python 3.10 or greater.
 
 Run `pip install -r requirements.txt` to install all dependencies. Ensure you are
 using a virtual environment such as `venv`
@@ -12,17 +12,11 @@ described in [pyodbc's documentation](https://github.com/mkleehammer/pyodbc/wiki
 
 - Unless you're willing to jump through many hoops, because Microsoft Access DB
 files are (basically) proprietary to Windows, there is no support for running
-on MacOS or Linux
+this pipeline on MacOS or Linux
 
 # Usage
 
-Because this pipeline converts Micrsoft Access DB data to MySQL data, this pipeline
-can only be run on Windows. This is because certain ODBC drivers pertinent to
-Microsoft Access DB are required to access the data in the file. While there are
-some alternatives, I believed it would be easiest to make this pipeline be run
-on Windows, especially since Microsoft Access DB files are primarily used on Windows.
-
-Besides the environment, this pipeline requires two inputs:
+This pipeline requires two inputs:
 
 - A credentials file (.ini) for your MySQL database. See below for the expected
 format
@@ -35,7 +29,11 @@ Logs are written to a file named `app.log`, which documents all successful table
 creation/data imports. Adjustments to variable-size data types are also documented.
 For example, when a column is identified as `VARCHAR`, the logs will explicitly
 indicate what size it was set to (ex. `VARCHAR(255)`). This also applies to
-`DECIMAL` (ex. `DECIMAL(20, 2)`, `DECIMAL(10, 0)`, etc.)
+`DECIMAL` (ex. `DECIMAL(20, 2)`, `DECIMAL(10, 0)`, etc.). Such values are based
+on certain fields found in the Microsoft Access DB table schemas.
+
+- Field size for text data types
+- Precision/Scale for `DECIMAL`
 
 To run the script, call `python -c WINDOWS_PATH_TO_CREDS_FILE -a WINDOWS_PATH_TO_ACCESS_DB_FILE`
 
